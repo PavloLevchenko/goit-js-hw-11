@@ -7,12 +7,13 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 import axios from 'axios';
 // Импорт библиотеки уведомлений
 import Notiflix from 'notiflix';
+// Импорт библиотеки прокрутки
+import Swiper from 'swiper/swiper-bundle';
+// Импорт стилей библиотеки прокрутки
+import 'swiper/swiper-bundle.min.css';
 
 const searchInput = document.querySelector('.search__input');
 const searchForm = document.querySelector('.search__form');
-const searchBtn = document.querySelector('.search__btn');
-const searchMore = document.querySelector('.search__more');
-let isSearchMore = false;
 
 let page = 1;
 let searchText;
