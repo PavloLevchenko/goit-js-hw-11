@@ -1,5 +1,8 @@
 <main>
-  <form class="search__form" id="search-form">
+  <button type="button" class="menu__button" aria-expanded="false" aria-controls="search-form">
+    &#9776;
+  </button>
+  <form class="search__form menu__container" id="search-form">
     <input
       class="search__input"
       type="text"
@@ -13,5 +16,5 @@
   <div class="gallery">
     <!-- Карточки изображений -->
   </div>
-  <button class="search__more" type="button" class="load-more">Load more</button>
+  <div class="backdrop is-hidden">Loading...</div>
 </main>

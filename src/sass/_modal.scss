@@ -1,0 +1,36 @@
+.menu__container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  @include _phone {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--animation-duration) var(--timing-function),
+      visibility var(--animation-duration) var(--timing-function);
+
+    &.is-open {
+      z-index: 2;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: all;
+    }
+  }
+}
+
+.menu__button {
+  position: fixed;
+  top: 20px;
+  right: 10px;
+  height: 40px;
+  width: 40px;
+
+  display: none;
+  margin-left: auto;
+  z-index: 50;
+  background-color: transparent;
+
+  @include _phone {
+    display: block;
+  }
+}

@@ -11,6 +11,7 @@ import Notiflix from 'notiflix';
 const searchInput = document.querySelector('.search__input');
 const searchForm = document.querySelector('.search__form');
 const pager = document.querySelector('.pagination');
+const backdrop = document.querySelector('.backdrop');
 
 let page = 1;
 let maxPages = 1;
@@ -29,6 +30,11 @@ function requestChanged() {
 
 function handleSubmit(event) {
   event.preventDefault();
+  if (searchInput.value == '') {
+    Notiflix.Notify.info('Input is empty');
+    return;
+  }
+
   if (requestChanged()) {
     page = 1;
     searchText = searchInput.value;
@@ -40,7 +46,6 @@ function handleSubmit(event) {
 searchForm.addEventListener('submit', handleSubmit);
 
 async function getImages(text) {
-  document.body.classList.add('content-loading');
   const params = {
     key: API_KEY,
     q: text,
@@ -53,6 +58,9 @@ async function getImages(text) {
   try {
     const response = await axios.get(FETCH_URL, { params });
     if (response.data.totalHits != 0) {
+      backdrop.classList.remove('is-hidden');
+      document.body.classList.add('content-loading');
+
       maxPages = Math.floor(response.data.totalHits / limit);
       if (response.data.totalHits % limit > 0) {
         maxPages += 1;
@@ -154,6 +162,7 @@ function onImgLoad() {
       if (counterLoad == 0) {
         scrollTo(0, 0);
         document.body.classList.remove('content-loading');
+        backdrop.classList.add('is-hidden');
         ticking = true;
       }
     };
@@ -197,3 +206,18 @@ function switchPage(event) {
 }
 
 pager.addEventListener('click', switchPage);
+
+(() => {
+  const menuBtnRef = document.querySelector('.menu__button');
+  const mobileMenuRef = document.querySelector('.menu__container');
+
+  menuBtnRef.addEventListener('click', () => {
+    const expanded = menuBtnRef.getAttribute('aria-expanded') === 'true' || false;
+
+    menuBtnRef.classList.toggle('is-open');
+    menuBtnRef.setAttribute('aria-expanded', !expanded);
+
+    document.body.classList.toggle('menu-open');
+    mobileMenuRef.classList.toggle('is-open');
+  });
+})();
