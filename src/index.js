@@ -7,10 +7,6 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 import axios from 'axios';
 // Импорт библиотеки уведомлений
 import Notiflix from 'notiflix';
-// Импорт библиотеки прокрутки
-import Swiper from 'swiper/swiper-bundle';
-// Импорт стилей библиотеки прокрутки
-import 'swiper/swiper-bundle.min.css';
 
 const searchInput = document.querySelector('.search__input');
 const searchForm = document.querySelector('.search__form');
@@ -18,6 +14,9 @@ const searchForm = document.querySelector('.search__form');
 let page = 1;
 let searchText;
 let lightbox;
+let ticking = false;
+let counterLoad = 0;
+let firstLoad = true;
 const limit = 40;
 const FETCH_URL = 'https://pixabay.com/api/';
 const API_KEY = '24909321-421e53eed99bbb069ae01ec93';
@@ -39,6 +38,7 @@ function handleSubmit(event) {
 searchForm.addEventListener('submit', handleSubmit);
 
 async function getImages(text) {
+  document.body.classList.add('content-loading');
   const params = {
     key: API_KEY,
     q: text,
@@ -55,18 +55,21 @@ async function getImages(text) {
       if (response.data.totalHits % limit > 0) {
         maxPages += 1;
       }
-      if (page == 1) {
+      if (page == 1 && firstLoad) {
         Notiflix.Notify.info(`Hooray! We found ${response.data.totalHits} Images`);
         Notiflix.Notify.info(`Total pages: ${maxPages} `);
+        firstLoad = false;
       } else {
-        Notiflix.Notify.info(`Page ${page}`);
+        if (page != maxPages) {
+          Notiflix.Notify.info(`Page ${page}`);
+        }
       }
       renderGallery(response.data.hits);
-
-      if (page < maxPages) {
+      if (page != maxPages) {
         page += 1;
-      } else if (page != 1) {
+      } else {
         Notiflix.Notify.info(`Page ${page} is last page`);
+        page = 1;
       }
     } else {
       Notiflix.Notify.failure(
@@ -74,7 +77,7 @@ async function getImages(text) {
       );
     }
   } catch (error) {
-    Notiflix.Notify.failure(error);
+    Notiflix.Notify.failure(error.message);
   }
 }
 
@@ -90,20 +93,15 @@ function addLightbox() {
   });
 }
 
-function scroll() {
-  const { height: cardHeight, width: cardWidth } = document
-    .querySelector('.gallery')
-    .firstElementChild.getBoundingClientRect();
-  const imagesPerPage = Math.floor(document.documentElement.clientWidth / cardWidth);
-  console.log(imagesPerPage);
-  window.scrollBy({
-    top: (cardHeight * limit * (page - 1)) / imagesPerPage,
-    behavior: 'smooth',
-  });
+function loadContent(insertHTML) {
+  //если полоса прокрутки в нижней части, загружаем нижний блок, если блоки закончились-верхний
+  //добавляем блок вниз и выгружаем первый блок
+  const gallery = document.querySelector('.gallery');
+  gallery.innerHTML = insertHTML;
 }
 
 function renderGallery(galleryItems) {
-  const insertHTML = galleryItems.reduce((divs, image) => {
+  const insertHTML = galleryItems.reduce((divs, image, index) => {
     return (
       divs +
       `<div class="gallery__item">
@@ -128,12 +126,48 @@ function renderGallery(galleryItems) {
     );
   }, '');
 
-  const gallery = document.querySelector('.gallery');
-  gallery.insertAdjacentHTML('beforeend', `${insertHTML}`);
+  loadContent(insertHTML);
+
   if (lightbox == null) {
     lightbox = addLightbox();
   } else {
     lightbox.refresh();
-    scroll();
+  }
+
+  onImgLoad();
+}
+
+function onImgLoad() {
+  const images = document.querySelectorAll('.gallery>.gallery__item .gallery__image');
+  counterLoad = images.length;
+  images.forEach(image => {
+    image.onload = () => {
+      counterLoad -= 1;
+      if (counterLoad == 0) {
+        scrollTo(0, 0);
+        document.body.classList.remove('content-loading');
+        ticking = true;
+      }
+    };
+  });
+}
+
+function loadMore() {
+  getImages(searchText);
+}
+
+function changePage(event) {
+  const container = event.target.body;
+  const { clientHeight, scrollHeight, scrollY: scrollTop } = container;
+  if (maxPages > 1 && ticking && clientHeight + scrollY >= scrollHeight) {
+    window.requestAnimationFrame(function () {
+      ticking = false;
+      console.log('clientHeight %s ', clientHeight);
+      console.log('scrollY %s ', scrollY);
+      console.log('scrollHeight  %s ', scrollHeight);
+      loadMore();
+    });
   }
 }
+
+window.addEventListener('scroll', changePage);
