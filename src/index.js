@@ -10,8 +10,10 @@ import Notiflix from 'notiflix';
 
 const searchInput = document.querySelector('.search__input');
 const searchForm = document.querySelector('.search__form');
+const pager = document.querySelector('.pagination');
 
 let page = 1;
+let maxPages = 1;
 let searchText;
 let lightbox;
 let ticking = false;
@@ -51,9 +53,15 @@ async function getImages(text) {
   try {
     const response = await axios.get(FETCH_URL, { params });
     if (response.data.totalHits != 0) {
-      let maxPages = Math.floor(response.data.totalHits / limit);
+      maxPages = Math.floor(response.data.totalHits / limit);
       if (response.data.totalHits % limit > 0) {
         maxPages += 1;
+      }
+      if (maxPages != 1) {
+        pager.innerHTML = renderPager(page, maxPages);
+        pager.classList.remove('hidden');
+      } else {
+        pager.classList.add('hidden');
       }
       if (page == 1 && firstLoad) {
         Notiflix.Notify.info(`Hooray! We found ${response.data.totalHits} Images`);
@@ -171,3 +179,21 @@ function changePage(event) {
 }
 
 window.addEventListener('scroll', changePage);
+
+function renderPager(currentPage, maxPages) {
+  let pagerHTML = '';
+  for (let i = 1; i <= maxPages; i += 1) {
+    pagerHTML += `<button class="${
+      currentPage == i ? 'pagination__btn active' : 'pagination__btn'
+    }" type="button">${i}</button>`;
+  }
+  return pagerHTML;
+}
+
+function switchPage(event) {
+  const number = Number(event.target.textContent);
+  page = number;
+  getImages(searchText);
+}
+
+pager.addEventListener('click', switchPage);

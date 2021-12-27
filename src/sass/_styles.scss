@@ -99,6 +99,17 @@ body.content-loading {
   text-align: center;
 }
 
-.hidden {
+// Pagination
+.pagination.hidden {
   display: none;
+}
+
+.pagination__btn {
+  cursor: pointer;
+  padding: 10px;
+  margin-left: 5px;
+}
+
+.pagination__btn.active {
+  color: red;
 }
