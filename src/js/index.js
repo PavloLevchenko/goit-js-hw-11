@@ -16,8 +16,9 @@ const backdrop = document.querySelector('.backdrop');
 //глобальные переменные
 let page = 1;
 let maxPages = 1;
-const limit = 40;
-let ticking = false;
+const LIMIT = 40;
+const VISIBLE_PAGE_BUTTONS = 5;
+let loaded = false;
 let firstLoad = true;
 let lightbox;
 let pagination;
@@ -30,7 +31,7 @@ function requestChanged() {
 //функция загрузки изображений из API
 function loadImages() {
   showLoadBackdrop();
-  getImages(searchText, page, limit, onLoad, Notiflix.Notify.failure);
+  getImages(searchText, page, LIMIT, onLoad, Notiflix.Notify.failure);
 }
 //функция вызывается при отправке формы (нажатии на кнопку поиска)
 function handleSubmit(event) {
@@ -49,7 +50,7 @@ function handleSubmit(event) {
 }
 
 function showLoadBackdrop() {
-  ticking = false;
+  loaded = false;
   backdrop.classList.remove('is-hidden');
   document.body.classList.add('content-loading');
 }
@@ -57,7 +58,7 @@ function showLoadBackdrop() {
 function hideLoadBackdrop() {
   document.body.classList.remove('content-loading');
   backdrop.classList.add('is-hidden');
-  ticking = true;
+  loaded = true;
 }
 //события после загрузки галереи
 function onRenderGallery(insertHTML) {
@@ -78,15 +79,15 @@ function onRenderGallery(insertHTML) {
 //загрузка изображений при смене страницы в навигации
 function changePage(eventData) {
   page = eventData.page;
-  if (ticking && page) {
+  if (loaded && page) {
     loadImages();
   }
 }
 
 //события после получения ответа от API
 function onLoad(galleryItems, total) {
-  maxPages = Math.floor(total / limit);
-  if (total % limit > 0) {
+  maxPages = Math.floor(total / LIMIT);
+  if (total % LIMIT > 0) {
     maxPages += 1;
   }
   if (page == 1 && firstLoad) {
@@ -103,7 +104,7 @@ function onLoad(galleryItems, total) {
 
   if (maxPages != 1) {
     if (!pagination) {
-      pagination = createPagination(total, limit, 5, page, changePage);
+      pagination = createPagination(total, LIMIT, VISIBLE_PAGE_BUTTONS, page, changePage);
     } else {
       pagination.reset(total);
       pagination.movePageTo(page);
@@ -126,7 +127,7 @@ searchForm.addEventListener('submit', handleSubmit);
 function listPage(event) {
   const container = event.target.body;
   const { clientHeight, scrollHeight, scrollY: scrollTop } = container;
-  if (maxPages > 1 && ticking && clientHeight + scrollY >= scrollHeight) {
+  if (maxPages > 1 && loaded && clientHeight + scrollY >= scrollHeight) {
     window.requestAnimationFrame(function () {
       loadImages();
     });
