@@ -80,34 +80,14 @@ body.content-loading {
 }
 
 // Pagination
-.pagination {
-  min-width: 50%;
-  margin-left: 10px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
-  grid-gap: 10px;
-  justify-content: center;
-  @include _phone {
-    margin-top: 10px;
+.menu__container > .tui-pagination {
+  @include _tablet_and_desktop {
+    margin-left: 10px;
   }
 }
 
-.pagination.hidden {
+.tui-pagination.hidden {
   display: none;
-}
-
-.pagination__btn {
-  cursor: pointer;
-  text-align: center;
-}
-
-.pagination__btn:hover,
-.pagination__btn:focus {
-  background-color: azure;
-}
-
-.pagination__btn.active {
-  color: #f00;
 }
 
 // Gallery
